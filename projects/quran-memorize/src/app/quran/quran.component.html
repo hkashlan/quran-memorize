@@ -1,0 +1,25 @@
+<div [style.font-family]="'MushafPage00' + pageNumber()" class="page">
+  @for (line of page(); track $index) {
+    <div (click)="getCaretPosition($event)">
+      {{line.replaceAll("_", "")}}
+    </div>
+  }
+</div>
+<button (click)="toggleRecording()">
+  {{ isRecording ? 'Stop Recording' : 'Start Recording' }}
+</button>
+
+@if(selectedWord) {
+  <div  class="floating-input" [ngStyle]="floatingInputStyle">
+    <label for="note">Add a note for "{{ selectedWord }}":</label>
+    <input id="note" #notes placeholder="Enter your note" />
+    <button (click)="saveNote(notes.value)">Save Note</button>
+  </div>
+}
+
+@for (data of characterData; track $index) {
+  <p>
+    {{data.notes}} seconds
+    <button (click)="playFromPosition(data.timestamp)">Play from here</button>
+  </p>
+}

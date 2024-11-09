@@ -1,0 +1,25 @@
+.page {
+  font-size: 6vw;
+  line-height: 4rem;
+
+  display: flex;
+  justify-content: center;
+  flex-direction: column;
+
+  > div {
+    display: inline-block;
+    margin: auto;
+  }
+}
+
+
+.floating-input {
+  position: absolute;
+  top: 50px;
+  left: 20px;
+  background: #f9f9f9;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
