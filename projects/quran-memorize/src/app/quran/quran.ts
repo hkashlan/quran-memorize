@@ -1,3 +1,16 @@
+export interface Recitation {
+  audioUrl: string;
+  notes: Note[];
+}
+
+export interface Note {
+  pageNumber: number;
+  lineNumber: number;
+  word: number;
+  timestamp: number;
+  note: string;
+}
+
 export const quranPages = [
   [
     "_ﮌﮍ",

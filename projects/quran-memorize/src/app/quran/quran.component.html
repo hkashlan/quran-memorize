@@ -1,25 +1,39 @@
-<div [style.font-family]="'MushafPage00' + pageNumber()" class="page">
+<nav>
+  <a [routerLink]="['../',  nextPage() ]">
+    &lt;&lt; {{nextPage()}}
+  </a>
+  <p>
+    <input type="number" [(ngModel)]="goToPageNumber" />
+    <button (click)="goToPage(goToPageNumber)">Go</button>
+  </p>
+  <a [routerLink]="['../',  prevPage() ]">
+    &gt;&gt; {{prevPage()}}
+  </a>
+</nav>
+
+
+<div [style.font-family]="'MushafPage' + pageNumber()" class="page">
   @for (line of page(); track $index) {
-    <div (click)="getCaretPosition($event)">
+    <div (click)="getCaretPosition($event, $index)">
       {{line.replaceAll("_", "")}}
     </div>
   }
 </div>
-<button (click)="toggleRecording()">
-  {{ isRecording ? 'Stop Recording' : 'Start Recording' }}
+<button (click)="audioQuranRecorder.toggleRecording()">
+  {{ audioQuranRecorder.isRecording ? 'Stop Recording' : 'Start Recording' }}
 </button>
 
-@if(selectedWord) {
+@if(tempNote) {
   <div  class="floating-input" [ngStyle]="floatingInputStyle">
-    <label for="note">Add a note for "{{ selectedWord }}":</label>
+    <label for="note">Add a note for "":</label>
     <input id="note" #notes placeholder="Enter your note" />
     <button (click)="saveNote(notes.value)">Save Note</button>
   </div>
 }
 
-@for (data of characterData; track $index) {
+@for (data of recitation.notes; track $index) {
   <p>
-    {{data.notes}} seconds
-    <button (click)="playFromPosition(data.timestamp)">Play from here</button>
+    {{data.note}} seconds
+    <button (click)="showNote(data)">Play from here</button>
   </p>
 }

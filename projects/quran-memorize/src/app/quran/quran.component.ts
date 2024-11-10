@@ -1,124 +1,77 @@
-import { Component, computed, input } from '@angular/core';
-import { quranPages } from './quran';
+import { Component, computed, inject, input } from '@angular/core';
+import { Note, quranPages, Recitation } from './quran';
 import { CommonModule, DecimalPipe } from '@angular/common';
+import { AudioQuranRecorder } from './audio';
+import { Router, RouterModule } from '@angular/router';
+import { FormsModule } from '@angular/forms';
+
+const pageNumber = (page: number) => ('00' + page).slice(-3);
 
 @Component({
   selector: 'app-quran',
-  imports: [CommonModule],
+  imports: [CommonModule, FormsModule, RouterModule],
   templateUrl: './quran.component.html',
-  styleUrl: './quran.component.scss'
+  styleUrl: './quran.component.scss',
 })
 export class QuranComponent {
+  private router = inject(Router);
   pageNumber = input.required<number>();
-  page  = computed(() => quranPages[this.pageNumber() - 1 ]);
-  // @ViewChild('textContainer') textContainer!: ElementRef;
-  isRecording = false;
-  mediaRecorder: any;
-  audioChunks: any[] = [];
-  audioContext!: AudioContext;
+  pageNumberString = computed(() => pageNumber(this.pageNumber()));
+  nextPage = computed(() => pageNumber(+this.pageNumber() + 1));
+  prevPage = computed(() => pageNumber(+this.pageNumber() -1));
+
+  page = computed(() => quranPages[this.pageNumber() - 1]);
+  goToPageNumber: number = 0;
+
   recordingStartTime!: number;
-  audioBuffer!: AudioBuffer;
-  audioUrl: string = '';
-  characterData: { position: number; timestamp: number; notes: string }[] = [];
-  currentAudioSource: AudioBufferSourceNode | null = null; // Track the current audio source
+  recitation: Recitation = {
+    audioUrl: '',
+    notes: [],
+  };
 
-  selectedWord: string = '';
-  selectedTimestamp: number | null = null;
-  noteText: string = '';
-  floatingInputStyle: any = { top: '0px', left: '0px' };  // Position style for floating input
+  tempNote: Omit<Note, 'note'> | undefined;
+  floatingInputStyle: any = { top: '0px', left: '0px' }; // Position style for floating input
+  audioQuranRecorder = new AudioQuranRecorder();
 
-
-
-  toggleRecording() {
-    if (this.isRecording) {
-      this.stopRecording();
-    } else {
-      this.startRecording();
-    }
-    this.isRecording = !this.isRecording;
-  }
-
-  async startRecording() {
-    this.audioContext = new AudioContext();
-    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-    this.mediaRecorder = new MediaRecorder(stream);
-    this.mediaRecorder.start();
-    this.audioChunks = [];
-    this.recordingStartTime = this.audioContext.currentTime;
-
-    this.mediaRecorder.ondataavailable = (event: any) => {
-      this.audioChunks.push(event.data);
-    };
-  }
-
-  async stopRecording() {
-    this.mediaRecorder.stop();
-    this.mediaRecorder.onstop = async () => {
-      const audioBlob = new Blob(this.audioChunks, { type: 'audio/wav' });
-      this.audioUrl = URL.createObjectURL(audioBlob);
-      const arrayBuffer = await audioBlob.arrayBuffer();
-      this.audioBuffer = await this.audioContext.decodeAudioData(arrayBuffer);
-      console.log('Audio recording saved at URL:', this.audioUrl);
-    };
-  }
-
-  saveNote(notes: string) {
-    if (this.selectedTimestamp !== null && this.selectedWord) {
+  saveNote(note: string) {
+    if (this.tempNote) {
       // Save the note along with position, timestamp, and selected word
-      const position = window.getSelection()?.getRangeAt(0).startOffset || 0;
-      this.characterData.push({
-        position,
-        timestamp: this.selectedTimestamp,
-        notes: notes
+      // const position = window.getSelection()?.getRangeAt(0).startOffset || 0;
+      this.recitation.notes.push({
+        ...this.tempNote,
+        note: note,
       });
 
-      // Clear selection and note text
-      this.selectedWord = '';
-      this.selectedTimestamp = null;
-      this.noteText = '';
+      this.tempNote = undefined;
     }
   }
 
-  getCaretPosition(event: MouseEvent) {
+  getCaretPosition(event: MouseEvent, line: number) {
     const range = window.getSelection()?.getRangeAt(0);
     if (range) {
-      const position = range.startOffset;
-      const timestamp = this.audioContext.currentTime - this.recordingStartTime - 3;
-      const word = 'sdf';
-      this.selectedWord = word;
-      this.selectedTimestamp = timestamp;
-      this.noteText = '';  // Clear note text field for a new entry
-      this.floatingInputStyle = {
-        top: `${event.clientY + 10}px`,  // Position it a little below the click
-        left: `${event.clientX + 10}px`  // Position it a little to the right of the click
+      // const position = range.startOffset;
+      this.tempNote = {
+        lineNumber: line,
+        pageNumber: this.pageNumber(),
+        word: range.startOffset,
+        timestamp: this.audioQuranRecorder.audioContext.currentTime - 3,
       };
-      console.log(`Selected word "${word}" at position ${position}, time ${timestamp}`);
+      this.floatingInputStyle = {
+        top: `${event.clientY + 10}px`, // Position it a little below the click
+        left: `${event.clientX + 10}px`, // Position it a little to the right of the click
+      };
     }
   }
 
-  playFromPosition(timestamp: number) {
-    if (this.audioBuffer) {
-      // Stop the current audio source if one is playing
-      if (this.currentAudioSource) {
-        this.currentAudioSource.stop();
-      }
+  showNote(note: Note) {
+    this.goToPage(note.pageNumber);
+    this.audioQuranRecorder.playFromPosition(note.timestamp);
+  }
 
-      // Create a new audio source
-      const source = this.audioContext.createBufferSource();
-      source.buffer = this.audioBuffer;
-      source.connect(this.audioContext.destination);
+  goToPage(page: number) {
+    if(page) {
 
-      // Set the current audio source and play for 6 seconds
-      this.currentAudioSource = source;
-      source.start(0, timestamp);
-      source.stop(this.audioContext.currentTime + 6);
-
-      // Clear current audio source after playback finishes
-      source.onended = () => {
-        this.currentAudioSource = null;
-      };
-    } else {
-      console.warn('Audio buffer is not available.');
+      this.router.navigate(['/page/' + pageNumber(page)]);
     }
   }
 }
