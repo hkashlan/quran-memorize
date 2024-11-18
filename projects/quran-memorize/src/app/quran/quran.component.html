@@ -1,15 +1,16 @@
-<nav>
-  <a [routerLink]="['../',  nextPage() ]">
-    &lt;&lt; {{nextPage()}}
+<mat-toolbar color="primary" class="toolbar">
+  <a mat-icon-button [routerLink]="['../',  nextPage() ]">
+    <mat-icon>arrow_back</mat-icon>
   </a>
-  <p>
-    <input type="number" [(ngModel)]="goToPageNumber" />
-    <button (click)="goToPage(goToPageNumber)">Go</button>
-  </p>
-  <a [routerLink]="['../',  prevPage() ]">
-    &gt;&gt; {{prevPage()}}
+
+  <!-- Centered page input for current page -->
+  <input matInput type="number" [(ngModel)]="goToPageNumber" (keyup.enter)="goToPage(goToPageNumber)">
+
+  <!-- Next page button -->
+  <a mat-icon-button [routerLink]="['../',  prevPage() ]">
+    <mat-icon>arrow_forward</mat-icon>
   </a>
-</nav>
+</mat-toolbar>
 
 
 <div [style.font-family]="'MushafPage' + pageNumber()" class="page">
@@ -37,3 +38,12 @@
     <button (click)="showNote(data)">Play from here</button>
   </p>
 }
+
+<button mat-icon-button class="fab" [color]="audioQuranRecorder.isRecording ? 'primary' : 'error'" (click)="audioQuranRecorder.toggleRecording()">
+  <mat-icon>{{audioQuranRecorder.isRecording ? 'stop' : 'fiber_manual_record' }}</mat-icon>
+</button>
+<!-- <mat-menu #optionsMenu="matMenu">
+  <button mat-menu-item >Option 1</button>
+  <button mat-menu-item >Option 2</button>
+  <button mat-menu-item >Option 3</button>
+</mat-menu> -->
