@@ -1,25 +1,63 @@
-<div [style.font-family]="'MushafPage00' + pageNumber()" class="page">
-  @for (line of page(); track $index) {
-    <div (click)="getCaretPosition($event)">
-      {{line.replaceAll("_", "")}}
-    </div>
-  }
+<mat-toolbar color="primary" class="toolbar" style="position: absolute;">
+  <a mat-icon-button [routerLink]="['../', nextPage()]">
+    <mat-icon>arrow_back</mat-icon>
+  </a>
+
+  <!-- Centered page input for current page -->
+  <input
+    matInput
+    type="number"
+    [(ngModel)]="goToPageNumber"
+    (keyup.enter)="goToPage(goToPageNumber)"
+  />
+
+  <!-- Next page button -->
+  <a mat-icon-button [routerLink]="['../', prevPage()]">
+    <mat-icon>arrow_forward</mat-icon>
+  </a>
+  <button (click)="updateDimensions()">{{totalLines()}}</button>
+</mat-toolbar>
+
+<div class="page" #quranPage (click)="getCaretPosition($event, 1)" >
+  @for (ayah of page(); track $index) {
+      @if(ayah.numberInSurah === 1) {
+          <div>Surah {{ ayah.numberInSurah }}</div>
+          <div>بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ </div>
+      }
+        {{ ayah.text.replace('بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ ', '') }}
+        <span class="ayah-number">{{ ayah.numberInSurah}}</span>
+    }
 </div>
-<button (click)="toggleRecording()">
-  {{ isRecording ? 'Stop Recording' : 'Start Recording' }}
+
+<button (click)="audioQuranRecorder.toggleRecording()">
+  {{ audioQuranRecorder.isRecording ? "Stop Recording" : "Start Recording" }}
 </button>
 
-@if(selectedWord) {
-  <div  class="floating-input" [ngStyle]="floatingInputStyle">
-    <label for="note">Add a note for "{{ selectedWord }}":</label>
-    <input id="note" #notes placeholder="Enter your note" />
-    <button (click)="saveNote(notes.value)">Save Note</button>
-  </div>
+@if(tempNote) {
+<div class="floating-input" [ngStyle]="floatingInputStyle">
+  <label for="note">Add a note for "":</label>
+  <input id="note" #notes placeholder="Enter your note" />
+  <button (click)="saveNote(notes.value)">Save Note</button>
+</div>
+} @for (data of recitation.notes; track $index) {
+<p>
+  {{ data.note }} seconds
+  <button (click)="showNote(data)">Play from here</button>
+</p>
 }
 
-@for (data of characterData; track $index) {
-  <p>
-    {{data.notes}} seconds
-    <button (click)="playFromPosition(data.timestamp)">Play from here</button>
-  </p>
-}
+<button
+  mat-icon-button
+  class="fab"
+  [color]="audioQuranRecorder.isRecording ? 'primary' : 'error'"
+  (click)="audioQuranRecorder.toggleRecording()"
+>
+  <mat-icon>{{
+    audioQuranRecorder.isRecording ? "stop" : "fiber_manual_record"
+  }}</mat-icon>
+</button>
+<!-- <mat-menu #optionsMenu="matMenu">
+  <button mat-menu-item >Option 1</button>
+  <button mat-menu-item >Option 2</button>
+  <button mat-menu-item >Option 3</button>
+</mat-menu> -->
