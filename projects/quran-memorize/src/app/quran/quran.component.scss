@@ -1,19 +1,36 @@
 .page {
-  font-size: clamp(1rem, 5vw, 5vh);
-  line-height: 4rem;
+  font-family: "Kitab Bold";
+  max-width: calc(100vh * 0.7);
+  height: 100vh; /* Full viewport height */
+  box-sizing: border-box; /* Include padding in width/height */
+  line-height: calc(100vh / 15); /* Divide the viewport height by 15 lines */
+  // font-size: calc((100vh / 15) * 0.53); /* Adjust font size relative to line height */
+  text-align: justify; /* Optional: Ensure text alignment */
+  margin: auto;
+  box-shadow: 0px 4px 6px -1px, rgba(0, 0, 0, 0.06) 0px 2px 4px -1px;
 
-  display: flex;
-  justify-content: center;
-  flex-direction: column;
+  .ayah-number {
+    position: relative;
+    font-size: smaller;
+    &::after {
+      content: " ";
+      position: absolute;
+      border: 1px solid black;
+      border-radius: 50%;
+      height: 100%;
+      width: 150%;
+      left: -25%;
+      display: inline-block;
+      text-align: center;
+    }
+  }
 
-  > div {
-    display: inline-block;
-    margin: auto;
-    height: 6vh; /* Each line takes 1/15th of viewport height */
-    width: 100vw; /* Each line spans full viewport width */
-    display: flex;
-    align-items: center;
-    justify-content: center;
+  &.fitting {
+    color: transparent;
+
+    .ayah-number::after {
+      border: 1px solid transparent;
+    }
   }
 }
 
